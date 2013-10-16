@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.awt.*;
 import javax.swing.*;
 
-import com.motekew.math.*;
-import com.motekew.servm.*;
-import com.motekew.ui.*;
+import com.motekew.vse.math.*;
+import com.motekew.vse.servm.*;
+import com.motekew.vse.ui.*;
 
 /*
  * Creates the user interface for the Attitude Control System Settings.

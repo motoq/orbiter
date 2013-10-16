@@ -24,7 +24,7 @@ package com.motekew.orbiter.gui;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import com.motekew.ui.StatusJP;
+import com.motekew.vse.ui.StatusJP;
 
 /**
  * Create an area to add reference points in inertial space to

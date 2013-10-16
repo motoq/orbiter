@@ -26,11 +26,11 @@ import javax.media.j3d.*;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Quat4d;
 
-import com.motekew.enums.*;
-import com.motekew.j3d.*;
-import com.motekew.ui.*;
-import com.motekew.cycxm.ModelStepper;
-import com.motekew.trmtm.*;
+import com.motekew.vse.cycxm.ModelStepper;
+import com.motekew.vse.enums.*;
+import com.motekew.vse.j3d.*;
+import com.motekew.vse.trmtm.*;
+import com.motekew.vse.ui.*;
 
 /**
  * This class holds both a <code>ISysEqns</code> object and a

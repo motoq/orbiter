@@ -21,16 +21,16 @@
 
 package com.motekew.orbiter;
 
-import com.motekew.c0ntm.AttitudeControlDCM;
-import com.motekew.enums.*;
-import com.motekew.envrm.*;
-import com.motekew.trmtm.*;
-import com.motekew.math.Tuple3D;
-import com.motekew.math.Matrix3X3;
-import com.motekew.math.Quaternion;
-import com.motekew.servm.IHandleObservable;
-import com.motekew.servm.IHandleObserver;
-import com.motekew.servm.HandleObserverNotificationUtil;
+import com.motekew.vse.c0ntm.AttitudeControlDCM;
+import com.motekew.vse.enums.*;
+import com.motekew.vse.envrm.*;
+import com.motekew.vse.math.Matrix3X3;
+import com.motekew.vse.math.Quaternion;
+import com.motekew.vse.math.Tuple3D;
+import com.motekew.vse.servm.HandleObserverNotificationUtil;
+import com.motekew.vse.servm.IHandleObservable;
+import com.motekew.vse.servm.IHandleObserver;
+import com.motekew.vse.trmtm.*;
 
 /**
  * This is a model of a simple spacecraft subject to a single environmental
@@ -459,7 +459,7 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
    * frame attitude, where as the control system creates a DCM by
    * forming a basis with inertial position and velocity vectors.
    * The different methods are used for now primarily because of
-   * a desire to com.motekew.test the two for consistency.
+   * a desire to com.motekew.vse.test the two for consistency.
    * <P>
    * If gravity has not been enabled, then bank, elevation,
    * and heading are computed relative to the inertial (computational)

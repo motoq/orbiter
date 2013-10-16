@@ -26,12 +26,12 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import com.motekew.math.SphericalHarmonicCoeff;
-import com.motekew.math.Matrix;
-import com.motekew.envrm.Gravity;
-import com.motekew.envrm.WGS84EGM96Ref;
-import com.motekew.servm.*;
-import com.motekew.ui.*;
+import com.motekew.vse.envrm.Gravity;
+import com.motekew.vse.envrm.WGS84EGM96Ref;
+import com.motekew.vse.math.Matrix;
+import com.motekew.vse.math.SphericalHarmonicCoeff;
+import com.motekew.vse.servm.*;
+import com.motekew.vse.ui.*;
 
 /**
  * Startup window for the Orbiter simulation.  The user can set the central

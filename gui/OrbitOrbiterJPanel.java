@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.awt.*;
 import javax.swing.*;
 
-import com.motekew.servm.*;
-import com.motekew.ui.DecimalMinMaxJTF;
+import com.motekew.vse.servm.*;
+import com.motekew.vse.ui.DecimalMinMaxJTF;
 
 /*
  * Create window for orbit parameters and orbiter properties.

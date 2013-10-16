@@ -25,11 +25,11 @@ import javax.swing.table.*;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import com.motekew.enums.EulerA;
-import com.motekew.math.Angles;
-import com.motekew.math.Quaternion;
-import com.motekew.trmtm.EulerAngles;
-import com.motekew.sensm.SimpleConeTracker;
+import com.motekew.vse.enums.EulerA;
+import com.motekew.vse.math.Angles;
+import com.motekew.vse.math.Quaternion;
+import com.motekew.vse.sensm.SimpleConeTracker;
+import com.motekew.vse.trmtm.EulerAngles;
 
 /**
  * A TableModel hard coded to handle 3 SimpleConeTracker models.

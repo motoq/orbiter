@@ -26,7 +26,7 @@ package com.motekew.orbiter;
  * Orbiter simulation that make use of a reference point.
  * <P>
  * It is best to look to the code implemented by these options to see what
- * each means (<code>com.motekew.trmtm.AttitudeRefPoint</code>).
+ * each means (<code>com.motekew.vse.trmtm.AttitudeRefPoint</code>).
  *
  * @author    Kurt Motekew
  * @since     20111124

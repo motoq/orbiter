@@ -29,14 +29,14 @@ import java.awt.event.*;
 import javax.swing.*;
 
 
-import com.motekew.enums.*;
-import com.motekew.envrm.Gravity;
-import com.motekew.math.*;
-import com.motekew.trmtm.*;
-import com.motekew.sensm.*;
-import com.motekew.c0ntm.*;
-import com.motekew.servm.*;
-import com.motekew.ui.*;
+import com.motekew.vse.c0ntm.*;
+import com.motekew.vse.enums.*;
+import com.motekew.vse.envrm.Gravity;
+import com.motekew.vse.math.*;
+import com.motekew.vse.sensm.*;
+import com.motekew.vse.servm.*;
+import com.motekew.vse.trmtm.*;
+import com.motekew.vse.ui.*;
 
 import com.motekew.orbiter.OrbiterSys;
 import com.motekew.orbiter.OrbiterAttOpts;
