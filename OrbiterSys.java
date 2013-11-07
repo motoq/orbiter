@@ -412,9 +412,9 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
       cb.getPosition(t, gvC.r_cb);           // Central body pos in I
       gvC.r.minus(gvC.r_cb);                 // model relative to CB in I
       cb.getAttitude(t, gvC.cb_i2b);         //Attitude of central body
-      gvC.cb_i2b.frameRot(gvC.r, gvC.r_cb);  // Now the pos of model in CB
+      gvC.r_cb.fRot(gvC.cb_i2b, gvC.r);      // Now the pos of model in CB
       cb.gravt(gvC.r_cb, gvC.gravityCB);
-      gvC.cb_i2b.vecRot(gvC.gravityCB, gravityI);
+      gravityI.vRot(gvC.cb_i2b, gvC.gravityCB);
     } else {
       gravityI.zero();
     }
