@@ -299,7 +299,8 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
       case CNT_STAB:
           // Get velocity and find torque to counteract it
         atC.omega.set(x.get(XdX6DQ.P), x.get(XdX6DQ.Q), x.get(XdX6DQ.R));
-        attCntLaw.getU(atC.omega, attCntTorque);
+        attCntLaw.computeU(atC.omega);
+        attCntTorque.set(attCntLaw);
         qT2B.identity();
           // Set desired attitude to current since there is no desired att...
         break;
@@ -308,7 +309,8 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
         desiredAttitude.toQuatFrameRot(atC.qd);
           // inertial is intermediate frame in this case
         atC.omega.set(x.get(XdX6DQ.P), x.get(XdX6DQ.Q), x.get(XdX6DQ.R));
-        attCntLaw.getU(qT2B, atC.qd, atC.omega, attCntTorque);
+        attCntLaw.computeU(qT2B, atC.qd, atC.omega);
+        attCntTorque.set(attCntLaw);
         break;
       case CNT_RPY:
         getPosition(t, atC.posI);
@@ -318,7 +320,8 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
         desiredAttitude.toDCM(atC.dcmIntermediate2Body);
         AttitudeRPY.posVel2DCM(atC.posI, atC.velI, atC.dcmI2Intermediate);
         atC.dcmd.mult(atC.dcmIntermediate2Body, atC.dcmI2Intermediate);
-        attCntLaw.getU(atC.q, atC.dcmd, atC.omega, attCntTorque);
+        attCntLaw.computeU(atC.q, atC.dcmd, atC.omega);
+        attCntTorque.set(attCntLaw);
           // Now compute Intermediate to Body (T2B)- reuse space
         atC.dcmI2Intermediate.transpose();    // Intermediate2I (T2I)
         atC.qd.set(atC.dcmI2Intermediate);
@@ -361,7 +364,8 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
             atC.qd.mult(q_i2t, q_t2b);
               // And apply control law
             atC.omega.set(x.get(XdX6DQ.P), x.get(XdX6DQ.Q), x.get(XdX6DQ.R));
-            attCntLaw.getU(atC.q, atC.qd, atC.omega, attCntTorque);
+            attCntLaw.computeU(atC.q, atC.qd, atC.omega);
+            attCntTorque.set(attCntLaw);
           } else {
             refPntAttUtil.posPnt2DCM(atC.posI,
                                      atC.rpPosI, atC.dcmI2Intermediate);
@@ -369,7 +373,8 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
             atC.dcmd.mult(atC.dcmIntermediate2Body, atC.dcmI2Intermediate);
               // Call control law
             atC.omega.set(x.get(XdX6DQ.P), x.get(XdX6DQ.Q), x.get(XdX6DQ.R));
-            attCntLaw.getU(atC.q, atC.dcmd, atC.omega, attCntTorque);
+            attCntLaw.computeU(atC.q, atC.dcmd, atC.omega);
+            attCntTorque.set(attCntLaw);
           }
             // Now compute Intermediate to Body (T2B)- reuse space
           atC.dcmI2Intermediate.transpose();    // Intermediate2I (T2I)
