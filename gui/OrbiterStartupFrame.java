@@ -285,8 +285,8 @@ public class OrbiterStartupFrame extends JFrame implements ActionListener {
     // and return.
 
       // Central body shape
-    clmJP.get(clM);
-    slmJP.get(slM);
+    clM = clmJP.get();
+    slM = slmJP.get();
       // Resize to minimum nonzero dimension
     int[] clmMN = clM.trimToMN();
     int[] slmMN = slM.trimToMN();

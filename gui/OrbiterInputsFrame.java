@@ -413,9 +413,9 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
     desiredAttitude.putDeg(EulerA.ELEV, attitudePanel.elevation.get());
     desiredAttitude.putDeg(EulerA.BANK, attitudePanel.bank.get());
     oSys.setDesiredAttitude(desiredAttitude);
-    attitudePanel.kv.get(attitudePanel.kvM);
-    attitudePanel.kp.get(attitudePanel.kpM);
-    attitudePanel.axes.get(attitudePanel.axesV);
+    attitudePanel.kvM.set(attitudePanel.kv.get());
+    attitudePanel.kpM.set(attitudePanel.kp.get());
+    attitudePanel.axesV.set(attitudePanel.axes.getTup());
     Tuple3D rpPos = new Tuple3D(cbPanel.rpntx.get(),
                                 cbPanel.rpnty.get(),
                                 cbPanel.rpntz.get());
@@ -509,7 +509,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
 
         // First TRIAD - estimate and output
       EulerAngles estRPY = new EulerAngles();
-      int nitr = triadADS.estimateAtt(trackers);
+      int nitr = triadADS.set(trackers);
       triadAtt.set(triadADS);
       estRPY.fromQuatFrameRot(triadAtt);
       EulerAngles deltaRPY = new EulerAngles();
@@ -527,7 +527,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
       }
 
         // WLS directly solving for quaternion - estimate and output
-      nitr = ads.estimateAtt(trackers);
+      nitr = ads.set(trackers);
       estAtt.set(ads);
       estRPY.fromQuatFrameRot(estAtt);
       deltaRPY.minus(truthRPY, estRPY);
@@ -579,7 +579,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
       }
 
         // WLS solving for quaternion error - estimate and output
-      nitr = ads2.estimateAtt(trackers);
+      nitr = ads2.set(trackers);
       estAtt.set(ads2);
       estRPY.fromQuatFrameRot(estAtt);
       deltaRPY.minus(truthRPY, estRPY);

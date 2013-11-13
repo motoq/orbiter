@@ -56,9 +56,9 @@ public class AttContSysJPanel extends JPanel {
   ValueViewJP roll = new ValueViewJP("Roll:  ", 0.0);
   ValueViewJP ux = new ValueViewJP("Ux:  ", 0.000);
     // Damping and Stiffness matrices/fields
-  Matrix3X3 kvM = new Matrix3X3();    // Default matrices all zeros...
-  Matrix3X3 kpM = new Matrix3X3();    // so
-  Tuple3D axesV = new Tuple3D();      // no action by control system
+  Matrix kvM = new Matrix3X3();        // Default matrices all zeros...
+  Matrix kpM = new Matrix3X3();        // so
+  Tuple axesV = new Tuple3D();         // no action by control system
   MatrixJP kv = new MatrixJP(3, 3, 3);
   MatrixJP kp = new MatrixJP(3, 3, 3);
   MatrixJP axes = new MatrixJP(3, 1, 3);
