@@ -66,8 +66,8 @@ public class OrbiterStartupFrame extends JFrame implements ActionListener {
   private JRadioButton fineIntegBtn = new JRadioButton("Fine", true);
   private JRadioButton mediumIntegBtn = new JRadioButton("Medium", false);
   private JRadioButton coarseIntegBtn = new JRadioButton("Coarse", false);
-  private Matrix clM = new Matrix(NGC, NGC);
-  private Matrix slM = new Matrix(NGC, NGC);
+  private Matrix clM;
+  private Matrix slM;
 
     // Gravitational parameter field
   private DecimalMinMaxJTF mu = new DecimalMinMaxJTF(11, 1e-30, MAX_VALUE);
@@ -97,8 +97,8 @@ public class OrbiterStartupFrame extends JFrame implements ActionListener {
                        { 0.0,    0.0,    0.0,    0.0,    0.0},
                        { 0.0,    0.0,    0.0,    0.0,    0.0},
                        { 0.0,    0.0,    0.0,    0.0,    0.0} };
-    clM.set(clm);
-    slM.set(slm);
+    clM = new Matrix(clm);
+    slM = new Matrix(slm);
     clmJP.set(clM);
     slmJP.set(slM);
     int dim = clM.numRows();
@@ -355,8 +355,8 @@ public class OrbiterStartupFrame extends JFrame implements ActionListener {
       if (useEarthValuesCB.isSelected()) {
         WGS84EGM96Ref cbRef = new WGS84EGM96Ref();
 
-        cbRef.unnormalizedGravityCosCoeff(clM);
-        cbRef.unnormalizedGravitySinCoeff(slM);
+        clM = cbRef.unnormalizedGravityCosCoeff(NGC-1, NGC-1);
+        slM = cbRef.unnormalizedGravitySinCoeff(NGC-1, NGC-1);
         mu.set(cbRef.gravitationalParameter());        // m^/s^2
         re.set(cbRef.gravitationalReferenceRadius());  // m
         omega.set(cbRef.angularVelocity());            // rad/s  
