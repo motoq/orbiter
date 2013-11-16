@@ -418,7 +418,8 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
       gvC.r.minus(gvC.r_cb);                 // model relative to CB in I
       cb.getAttitude(t, gvC.cb_i2b);         //Attitude of central body
       gvC.r_cb.fRot(gvC.cb_i2b, gvC.r);      // Now the pos of model in CB
-      cb.gravt(gvC.r_cb, gvC.gravityCB);
+      cb.gravt(gvC.r_cb);
+      gvC.gravityCB.set(cb);
       gravityI.vRot(gvC.cb_i2b, gvC.gravityCB);
     } else {
       gravityI.zero();
@@ -429,7 +430,7 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
   private class GravityCache {
     Tuple3D r = new Tuple3D();
     Tuple3D r_cb = new Tuple3D();
-    Tuple3D gravityCB = new Tuple3D();
+    Acceleration gravityCB = new Acceleration();
     Quaternion cb_i2b = new Quaternion();
   }
   // finishModel() Cache - attitude control related
