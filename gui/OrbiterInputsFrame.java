@@ -502,7 +502,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
         // First TRIAD - estimate and output
       EulerAngles estRPY = new EulerAngles();
       AttitudeDetTRIAD triadAtt = new AttitudeDetTRIAD();
-      int nitr = triadAtt.set(trackers);
+      int nitr = triadAtt.solve(trackers);
       estRPY.fromQuatFrameRot(triadAtt);
       EulerAngles deltaRPY = new EulerAngles();
       deltaRPY.minus(truthRPY, estRPY);
@@ -520,7 +520,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
 
         // WLS directly solving for quaternion - estimate and output
       AttitudeDetQuat  wlsAtt = new AttitudeDetQuat();
-      nitr = wlsAtt.set(trackers);
+      nitr = wlsAtt.solve(trackers);
       estRPY.fromQuatFrameRot(wlsAtt);
       deltaRPY.minus(truthRPY, estRPY);
       double droll = deltaRPY.getDeg(EulerA.BANK);
@@ -572,7 +572,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
 
         // WLS solving for quaternion error - estimate and output
       AttitudeDetDQuat dqAtt = new AttitudeDetDQuat(); 
-      nitr = dqAtt.set(trackers);
+      nitr = dqAtt.solve(trackers);
       estRPY.fromQuatFrameRot(dqAtt);
       deltaRPY.minus(truthRPY, estRPY);
       adsPanel.adsOutTableModel.setValueAt(
