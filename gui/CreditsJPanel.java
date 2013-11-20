@@ -23,7 +23,7 @@ package com.motekew.orbiter.gui;
 
 import javax.swing.*;
 
-/*
+/**
  * Creates a JPanel with text listing external resources
  * and other information.
  *

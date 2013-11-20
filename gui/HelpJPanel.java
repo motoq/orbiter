@@ -23,7 +23,7 @@ package com.motekew.orbiter.gui;
 
 import javax.swing.*;
 
-/*
+/**
  * Creates a JPanel with text describing what effect keys
  * have.  Also mention availability of context sensitive
  * help.

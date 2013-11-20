@@ -29,7 +29,7 @@ import com.motekew.vse.math.*;
 import com.motekew.vse.servm.*;
 import com.motekew.vse.ui.*;
 
-/*
+/**
  * Creates the user interface for the Attitude Control System Settings.
  * The desired attitude relative to a reference attitude (inertial,
  * local level, etc.) can be entered.  The deviation from the desired
