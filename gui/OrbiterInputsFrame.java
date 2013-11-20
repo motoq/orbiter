@@ -489,14 +489,6 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
 
         // Set output time
       adsPanel.attTime.refreshTime(sysTime);
-        // Create attitude determination objects
-        // TRIAD makes a good reference method.
-      AttitudeDetTRIAD triadADS = new AttitudeDetTRIAD();
-      AttitudeDetQuat ads = new AttitudeDetQuat();
-      //AttitudeDetQuatC ads = new AttitudeDetQuatC();
-      AttitudeDetDQuat ads2 = new AttitudeDetDQuat();
-      Quaternion triadAtt = new Quaternion();
-      Quaternion estAtt = new Quaternion();
         // For outputs
       EulerAngles truthRPY = new EulerAngles();
       truthRPY.fromQuatFrameRot(attitude);
@@ -509,8 +501,8 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
 
         // First TRIAD - estimate and output
       EulerAngles estRPY = new EulerAngles();
-      int nitr = triadADS.set(trackers);
-      triadAtt.set(triadADS);
+      AttitudeDetTRIAD triadAtt = new AttitudeDetTRIAD();
+      int nitr = triadAtt.set(trackers);
       estRPY.fromQuatFrameRot(triadAtt);
       EulerAngles deltaRPY = new EulerAngles();
       deltaRPY.minus(truthRPY, estRPY);
@@ -527,9 +519,9 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
       }
 
         // WLS directly solving for quaternion - estimate and output
-      nitr = ads.set(trackers);
-      estAtt.set(ads);
-      estRPY.fromQuatFrameRot(estAtt);
+      AttitudeDetQuat  wlsAtt = new AttitudeDetQuat();
+      nitr = wlsAtt.set(trackers);
+      estRPY.fromQuatFrameRot(wlsAtt);
       deltaRPY.minus(truthRPY, estRPY);
       double droll = deltaRPY.getDeg(EulerA.BANK);
       double dpitch = deltaRPY.getDeg(EulerA.ELEV);
@@ -539,10 +531,10 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
       adsPanel.adsOutTableModel.setValueAt(df.format(droll), 2, 3);
       if (nitr >= 0) {
         adsPanel.adsOutTableModel.setValueAt(new Integer(nitr), 2, 4);
-        Matrix qCov = ads.covariance();
+        Matrix qCov = wlsAtt.covariance();
         Matrix eCov = new Matrix(estRPY.length());
         DEulerDQuat dedq = new DEulerDQuat();
-        dedq.partials(estAtt);
+        dedq.partials(wlsAtt);
         eCov.transform(dedq, qCov);
           // Three Sigma
         double sigR = 3.0*Math.toDegrees(Math.sqrt(eCov.get(1, 1)));
@@ -564,7 +556,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
           ad.time = sysTime;
           ad.truthAtt.set(attitude);
           ad.triadAtt.set(triadAtt);
-          ad.estAtt.set(estAtt);
+          ad.estAtt.set(wlsAtt);
           ad.attCov.set(qCov);
           ad.deltaEuler.set(deltaRPY);
           ad.eulerCov.set(eCov);
@@ -579,9 +571,9 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
       }
 
         // WLS solving for quaternion error - estimate and output
-      nitr = ads2.set(trackers);
-      estAtt.set(ads2);
-      estRPY.fromQuatFrameRot(estAtt);
+      AttitudeDetDQuat dqAtt = new AttitudeDetDQuat(); 
+      nitr = dqAtt.set(trackers);
+      estRPY.fromQuatFrameRot(dqAtt);
       deltaRPY.minus(truthRPY, estRPY);
       adsPanel.adsOutTableModel.setValueAt(
                           df.format(deltaRPY.getDeg(EulerA.HEAD)), 4, 1);
