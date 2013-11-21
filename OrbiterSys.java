@@ -68,6 +68,7 @@ import com.motekew.vse.trmtm.*;
  * 
  * @author  Kurt Motekew
  * @since   20081225
+ * @since   20131121   Implemented improved gravity model interface.
  */
 public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
 
@@ -89,6 +90,7 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
   private AttitudeRefPoint refPntAttUtil = new AttitudeRefPoint();
     // Central body creating gravity potential
   private ICentralBody cb = null;
+  private GravitationalAcceleration gravityCB = null;
     // Reference point for attitude control option
   private IPosition refPnt = null;
 
@@ -114,6 +116,7 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
    */
   public void enableGravity(ICentralBody cb_in) {
     cb = cb_in;
+    gravityCB = cb.getGravityModel();
   }
 
   /**
@@ -412,9 +415,8 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
       gvC.r.minus(gvC.r_cb);                 // model relative to CB in I
       cb.getAttitude(t, gvC.cb_i2b);         //Attitude of central body
       gvC.r_cb.fRot(gvC.cb_i2b, gvC.r);      // Now the pos of model in CB
-      cb.gravt(gvC.r_cb);
-      gvC.gravityCB.set(cb);
-      gravityI.vRot(gvC.cb_i2b, gvC.gravityCB);
+      gravityCB.gravt(gvC.r_cb);
+      gravityI.vRot(gvC.cb_i2b, gravityCB);
     } else {
       gravityI.zero();
     }
@@ -424,7 +426,6 @@ public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
   private class GravityCache {
     Tuple3D r = new Tuple3D();
     Tuple3D r_cb = new Tuple3D();
-    Acceleration gravityCB = new Acceleration();
     Quaternion cb_i2b = new Quaternion();
   }
   // finishModel() Cache - attitude control related
