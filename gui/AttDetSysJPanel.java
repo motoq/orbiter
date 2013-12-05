@@ -24,6 +24,7 @@ package com.motekew.orbiter.gui;
 import javax.swing.*;
 import javax.swing.table.*;
 
+import com.motekew.vse.sensm.IPointingPlatform;
 import com.motekew.vse.ui.StatusJP;
 
 /**
@@ -46,7 +47,7 @@ public class AttDetSysJPanel extends JPanel {
    * @param   parent   The object accepting actions from this JPanel
    * @param   re       Reference radius
    */
-  public AttDetSysJPanel(OrbiterInputsFrame parent) {
+  public AttDetSysJPanel(OrbiterInputsFrame parent, IPointingPlatform platform) {
     setBorder(BorderFactory.createTitledBorder(
               BorderFactory.createEtchedBorder(), "Attitude Determination")
               );
@@ -61,7 +62,7 @@ public class AttDetSysJPanel extends JPanel {
                                    "Star Tracker Body to Sensor Orientation")
                           );
 
-    adsTableModel = new ConeTrackerTableModel();
+    adsTableModel = new ConeTrackerTableModel(platform);
     JTable adsTable = new JTable((TableModel) adsTableModel);
     //fieldsList.add(omega);
     //omega.setErrorLabel("CB Angular Velocity");

@@ -27,6 +27,7 @@ import com.motekew.vse.envrm.*;
 import com.motekew.vse.math.Matrix3X3;
 import com.motekew.vse.math.Quaternion;
 import com.motekew.vse.math.Tuple3D;
+import com.motekew.vse.sensm.IPointingPlatform;
 import com.motekew.vse.servm.HandleObserverNotificationUtil;
 import com.motekew.vse.servm.IHandleObservable;
 import com.motekew.vse.servm.IHandleObserver;
@@ -70,7 +71,8 @@ import com.motekew.vse.trmtm.*;
  * @since   20081225
  * @since   20131121   Implemented improved gravity model interface.
  */
-public class OrbiterSys extends Simple6DOFSys implements IHandleObservable {
+public class OrbiterSys extends Simple6DOFSys implements IPointingPlatform,
+                                                         IHandleObservable {
 
     //Controls (force and torque components) acting on the system.
   private ControlFTxyz ft = new ControlFTxyz();

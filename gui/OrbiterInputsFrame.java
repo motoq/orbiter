@@ -232,7 +232,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
     tabbedPane.addTab("Orbiter", orbitPanel);
     attitudePanel = new AttContSysJPanel(this, fieldsList);
     tabbedPane.addTab("ACS", attitudePanel);
-    adsPanel = new AttDetSysJPanel(this);
+    adsPanel = new AttDetSysJPanel(this, os);
     tabbedPane.addTab("ADS", adsPanel);
     cbPanel = new CBodyJPanel(fieldsList);
     tabbedPane.addTab("Central Body", cbPanel);
@@ -475,16 +475,14 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
     DecimalFormat df = new DecimalFormat("0.0000");
     SimpleConeTracker[] trackers = adsPanel.adsTableModel.getConeTrackers();
 
-    Tuple3D position = new Tuple3D();
     Quaternion attitude = new Quaternion();
     double sysTime = oSys.getT();
-    oSys.getPosition(sysTime, position);
     oSys.getAttitude(sysTime, attitude);
 
     if (trackers != null) {
         // Call upon each tracker to make measurements
       for (int ii=0; ii<trackers.length; ii++) {
-        trackers[ii].measure(position, attitude);
+        trackers[ii].measure(sysTime);
       }
 
         // Set output time

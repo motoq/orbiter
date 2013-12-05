@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import com.motekew.vse.enums.EulerA;
 import com.motekew.vse.math.Angles;
 import com.motekew.vse.math.Quaternion;
+import com.motekew.vse.sensm.IPointingPlatform;
 import com.motekew.vse.sensm.SimpleConeTracker;
 import com.motekew.vse.trmtm.EulerAngles;
 
@@ -57,6 +58,12 @@ public class ConeTrackerTableModel extends AbstractTableModel {
             {"Third",  new Double(180), new Double(0),  new Double(0),
                        new Double(10), new Double(.001), new Integer(5)}
   };
+
+  private IPointingPlatform platform;
+
+  public ConeTrackerTableModel(IPointingPlatform plt) {
+    platform = plt;
+  }
 
   /**
    * Updates the array of trackers with most recently entered values from
@@ -93,7 +100,7 @@ public class ConeTrackerTableModel extends AbstractTableModel {
         throw new NumberFormatException("Bad cone or sigma value");
       }
         // Set orientation
-      trackers[ii] = new SimpleConeTracker(nm);
+      trackers[ii] = new SimpleConeTracker(platform, nm);
       ea.toQuatFrameRot(orientation);
       trackers[ii].setOrientation(orientation);
         // Set conewidth and measurement uncertainty (convert sigma to sines)
