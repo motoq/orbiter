@@ -26,15 +26,19 @@ import javax.media.j3d.*;
 import javax.vecmath.Color3f;
 
 import com.motekew.vse.c0ntm.AttitudeControlDCM;
+import com.motekew.vse.sensm.SimpleConeTracker;
 import com.motekew.vse.cycxm.ModelStepper;
 import com.motekew.vse.enums.Basis3D;
 import com.motekew.vse.enums.XdX6DQ;
+import com.motekew.vse.enums.EulerA;
 import com.motekew.vse.envrm.*;
 import com.motekew.vse.j3d.*;
 import com.motekew.vse.j3d.meshmodels.SparkySpacecraftMat;
 import com.motekew.vse.math.Matrix3X3;
 import com.motekew.vse.math.Tuple3D;
+import com.motekew.vse.math.Quaternion;
 import com.motekew.vse.servm.ISimModel;
+import com.motekew.vse.trmtm.EulerAngles;
 import com.motekew.vse.trmtm.KeplerianOE;
 import com.motekew.vse.trmtm.ReferencePointSys;
 import com.motekew.vse.trmtm.RotatingBodySys;
@@ -84,6 +88,7 @@ import com.motekew.orbiter.gui.OrbiterInputsFrame;
 public class Orbiter implements ISimModel {
 
   public static final int NUMMODELS = 3;
+  public static final int N_STAR_TRACKERS = 3;
 
   /**
    * Launches the simulation - satisfies ISimModel Interface
@@ -148,6 +153,30 @@ public class Orbiter implements ISimModel {
     vehicleSys.putJ(Basis3D.K, Basis3D.K, 10.7);
       // Only XZ plane of symmetry if non-zero
     vehicleSys.putJ(Basis3D.I, Basis3D.K, 0.169);
+
+      // Initialize orbiter star trackers
+    SimpleConeTracker[] trackers = new SimpleConeTracker[N_STAR_TRACKERS];
+      // Body to tracker:       Roll    Pitch   Yaw
+    double[][] tkr_atts = { {  135.0,  -45.0,   0.0 },
+                            { -135.0,  -45.0,   0.0 },
+                            {    0.0,    0.0,   0.0 }};
+    EulerAngles ea = new EulerAngles();
+    Quaternion q_b2s = new Quaternion();
+    int    maxMeas   = 10;                         // Max 10 meas/tracker
+    double dvalcone  = Math.toRadians(10.0);       // Full Conewidth
+    double dvalsigma = Math.toRadians(0.001);      // 1-sigma meas uncertainty
+    for (int ii=0; ii<N_STAR_TRACKERS; ii++) {
+      trackers[ii] = new SimpleConeTracker(vehicleSys, maxMeas);
+      trackers[ii].setConeWidth(dvalcone);
+      trackers[ii].setRandomError(dvalsigma);
+      ea.put(EulerA.BANK, Math.toRadians(tkr_atts[ii][0]));
+      ea.put(EulerA.ELEV, Math.toRadians(tkr_atts[ii][1]));
+      ea.put(EulerA.HEAD, Math.toRadians(tkr_atts[ii][2]));
+      ea.toQuatFrameRot(q_b2s);
+      trackers[ii].setOrientation(q_b2s);
+    }
+    vehicleSys.setStarTrackers(trackers);
+
       // Initialize orbiter attitude control system - leave it OFF
     double[][] kv_array = { { 2.0,  0.0,  0.0 },
                             { 0.0,  9.0,  0.0 },

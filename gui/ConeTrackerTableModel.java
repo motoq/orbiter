@@ -27,53 +27,61 @@ import javax.swing.JOptionPane;
 
 import com.motekew.vse.enums.EulerA;
 import com.motekew.vse.math.Angles;
+import com.motekew.vse.math.NumberUtil;
 import com.motekew.vse.math.Quaternion;
-import com.motekew.vse.sensm.IPointingPlatform;
-import com.motekew.vse.sensm.SimpleConeTracker;
+import com.motekew.vse.sensm.SimpleConeTrackerCfg;
 import com.motekew.vse.trmtm.EulerAngles;
 
 /**
- * A TableModel hard coded to handle 3 SimpleConeTracker models.
- * The table structure is defined, and upon request, a pointer to
- * the stored list of SimpleConeTrackers is returned with the most
- * recently entered values.
+ * A Table model initialized with default SimpleConeTracker settings
+ * and a method to return new values entered by the user.
+ *
+ * @author  Kurt Motekew
+ * @since   2012, 2013
  */
 public class ConeTrackerTableModel extends AbstractTableModel {
-  private static final int NTRACKERS = 3;
-  
+  private final int NTRACKERS;
+  private final int NCOL = 6;
+
     // Table columns
-  private String[] columnNames = {"Tracker",
-                                  "X-Rot (deg)", "Y-Rot (deg)", "Z-Rot (deg)",
+  private String[] columnNames = {"X-Rot (deg)", "Y-Rot (deg)", "Z-Rot (deg)",
                                   "Cone Width", "1-\u03C3 (deg)", "Max Meas"};
 
     // Default orientation, 10 deg conewidth, 0.001 deg 1-sig random error
-  private Object[][] data = {
-              // Point along +y
-            {"First",  new Double(-90), new Double(0),  new Double(0),
-                       new Double(10), new Double(.001), new Integer(5)},
-              // Point along +x
-            {"Second", new Double(0),   new Double(90), new Double(0),
-                       new Double(10), new Double(.001), new Integer(5)},
-              // Point along -z
-            {"Third",  new Double(180), new Double(0),  new Double(0),
-                       new Double(10), new Double(.001), new Integer(5)}
-  };
+  private Object[][] data = null;
 
-  private IPointingPlatform platform;
+  /**
+   * @param   cfgs   Default Cone tracker Settings.  One tracker
+   *                 per array entry.
+   */
+  public ConeTrackerTableModel(SimpleConeTrackerCfg[] cfgs) {
+    NTRACKERS = cfgs.length;
 
-  public ConeTrackerTableModel(IPointingPlatform plt) {
-    platform = plt;
+    EulerAngles ea = new EulerAngles();
+    data = new Object[NTRACKERS][NCOL];
+    for (int ii=0; ii<NTRACKERS; ii++) {
+      ea.fromQuatFrameRot(cfgs[ii].bodyToSensorAtt());
+      data[ii][0] = new Double(NumberUtil.truncate(ea.getDeg(EulerA.BANK), 1));
+      data[ii][1] = new Double(NumberUtil.truncate(ea.getDeg(EulerA.ELEV), 1));
+      data[ii][2] = new Double(NumberUtil.truncate(ea.getDeg(EulerA.HEAD), 1));
+      data[ii][3] = new Double(NumberUtil.truncate(
+                                  Math.toDegrees(cfgs[ii].fullConeWidth()), 1));
+      data[ii][4] = new Double(NumberUtil.truncate(
+                                 Math.toDegrees(cfgs[ii].oneSigmaRandom()), 4));
+      data[ii][5] = new Integer(cfgs[ii].maxMeasurementSets());
+    }
   }
 
   /**
-   * Updates the array of trackers with most recently entered values from
-   * the corresponding table and returns a pointer.
+   * Creates an array of cone tracker settings with the most recently
+   * entered values entered into the table.
    *
-   * @return    Array of trackers with updated internal values based on table
-   *            inputs.  If a parsing error has occurred, a null is returned.
+   * @return    A new array of cone tracker settings with the values most
+   *            recently entered into the table.  If a parsing error has
+   *            occurred, a null is returned.
    */
-  public SimpleConeTracker[] getConeTrackers() {
-    SimpleConeTracker[] trackers = new SimpleConeTracker[NTRACKERS];
+  public SimpleConeTrackerCfg[] getConeTrackerSettings() {
+    SimpleConeTrackerCfg[] trackers = new SimpleConeTrackerCfg[NTRACKERS];
 
       // Parse tracker parameters from table and update
       // system for each along with its associated tracker.
@@ -100,12 +108,9 @@ public class ConeTrackerTableModel extends AbstractTableModel {
         throw new NumberFormatException("Bad cone or sigma value");
       }
         // Set orientation
-      trackers[ii] = new SimpleConeTracker(platform, nm);
       ea.toQuatFrameRot(orientation);
-      trackers[ii].setOrientation(orientation);
-        // Set conewidth and measurement uncertainty (convert sigma to sines)
-      trackers[ii].setConeWidth(dvalcone);
-      trackers[ii].setRandomError(Math.sin(dvalsigma));
+      trackers[ii] = new SimpleConeTrackerCfg(nm, dvalcone, dvalsigma,
+                                                          orientation);
       } catch(NumberFormatException nfe) {
         trackers = null;
         JOptionPane.showMessageDialog(new JFrame(), "Bad Star Tracker Inputs",

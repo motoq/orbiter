@@ -21,13 +21,15 @@
 
 package com.motekew.orbiter;
 
-import com.motekew.vse.c0ntm.AttitudeControlDCM;
+import com.motekew.vse.c0ntm.*;
 import com.motekew.vse.enums.*;
 import com.motekew.vse.envrm.*;
 import com.motekew.vse.math.Matrix3X3;
 import com.motekew.vse.math.Quaternion;
 import com.motekew.vse.math.Tuple3D;
 import com.motekew.vse.sensm.IPointingPlatform;
+import com.motekew.vse.sensm.SimpleConeTracker;
+import com.motekew.vse.sensm.SimpleConeTrackerCfg;
 import com.motekew.vse.servm.HandleObserverNotificationUtil;
 import com.motekew.vse.servm.IHandleObservable;
 import com.motekew.vse.servm.IHandleObserver;
@@ -96,6 +98,9 @@ public class OrbiterSys extends Simple6DOFSys implements IPointingPlatform,
     // Reference point for attitude control option
   private IPosition refPnt = null;
 
+    // Attitude Determination payload
+  private SimpleConeTracker[] starTrackers  = null;
+
     // Used to keep track of external interfaces interested in knowing
     // when to pull current state from this object.  Stimulated at the
     // same rate as the above outputs.
@@ -162,6 +167,91 @@ public class OrbiterSys extends Simple6DOFSys implements IPointingPlatform,
       setX(XdX6DQ.DY, vel.get(Basis3D.J));
       setX(XdX6DQ.DZ, vel.get(Basis3D.K));
     }
+  }
+
+  /**
+   * Sets an array of SimpleConeTracker objects as star
+   * trackers.  At least 2 must be defined, otherwise
+   * the array will remain null;
+   *
+   * @param   sct   An array of star trackers to point
+   *                to - they are not copied.
+   */
+  public void setStarTrackers(SimpleConeTracker[] sct) {
+    if (sct.length > 1) {
+      starTrackers = sct;
+    } else {
+      starTrackers = null;
+    }
+  }
+
+  /**
+   * Configures an array of SimpleConeTracker objects as star trackers.
+   * If the star trackers have not yet been initialized, at least two
+   * tracker config objects must be passed in, otherwise the internal
+   * star tracker array will remain null.  If the array of input settings
+   * is longer than the current array of star trackers, a new set of
+   * star trackers will be instantiated and the old set discarded.
+   *
+   * @param   tcfgs   An array of star trackers settings to adopt.
+   *                  If the array is less than the current length,
+   *                  then only the first tcfgs.length will be set.
+   */
+  public void setStarTrackers(SimpleConeTrackerCfg[] tcfgs) {
+    if (starTrackers == null  ||  starTrackers.length < tcfgs.length) {
+      if (tcfgs.length > 1) {
+        starTrackers = new SimpleConeTracker[tcfgs.length];
+      } else {
+        starTrackers = null;
+      }
+    }
+  }
+
+  /**
+   * @return  A new array of SimpleConeTrackerCfg objects representing
+   *          the number of and settings of the star trackers
+   *          configured in this model.
+   */
+  public SimpleConeTrackerCfg[] starTrackerConfigs() {
+    SimpleConeTrackerCfg[] tcfgs =
+                           new SimpleConeTrackerCfg[starTrackers.length];
+    for (int ii=0; ii<starTrackers.length; ii++) {
+      tcfgs[ii] = starTrackers[ii].getConfiguration();
+    }
+    return tcfgs;
+  }
+
+  /**
+   * Estimates attitude at current system time using a deterministic
+   * method, direct WLS solution (non constrained) of quaternion
+   * elements, and a method of solving for a correction rotation.
+   *
+   * @param     att   Output, "Truth" attitude.
+   * @param   triad   Output attitude solution using the TRIAD method.
+   * @param    qwls   Output, using a direct solution for each quat component
+   * @param   dqwls   Output, solving for quaternion rotation correction
+   *
+   * @return          Time associated with attitude estimates
+   */
+  public double estimateAttitudeBatch(Quaternion         att,
+                                      AttitudeDetTRIAD triad,
+                                      AttitudeDetQuat   qwls,
+                                      AttitudeDetDQuat dqwls) {
+    double sysTime = this.getT();
+    this.getAttitude(sysTime, att);
+
+      // Take measurements to be used by each system.
+    if (starTrackers != null) {
+      for (int ii=0; ii<starTrackers.length; ii++) {
+        starTrackers[ii].measure(sysTime);
+      }
+    }
+
+    triad.solve(starTrackers);
+    qwls.solve(starTrackers);
+    dqwls.solve(starTrackers);
+    
+    return sysTime;
   }
 
   /**

@@ -1,7 +1,7 @@
 /*
  c  AttDetSysJPanel.java
  c
- c  Copyright (C) 2012 Kurt Motekew
+ c  Copyright (C) 2012, 2013 Kurt Motekew
  c
  c  This library is free software; you can redistribute it and/or
  c  modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@ package com.motekew.orbiter.gui;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import com.motekew.vse.sensm.IPointingPlatform;
+import com.motekew.vse.sensm.SimpleConeTrackerCfg;
 import com.motekew.vse.ui.StatusJP;
 
 /**
@@ -44,10 +44,11 @@ public class AttDetSysJPanel extends JPanel {
   TableModel adsOutTableModel;
 
   /**
-   * @param   parent   The object accepting actions from this JPanel
-   * @param   re       Reference radius
+   * @param   parent       The object accepting actions from this JPanel
+   * @param   tkrSettings  Intial settings to use for the start trackers.
    */
-  public AttDetSysJPanel(OrbiterInputsFrame parent, IPointingPlatform platform) {
+  public AttDetSysJPanel(OrbiterInputsFrame parent,
+                         SimpleConeTrackerCfg[] tkrSettings) {
     setBorder(BorderFactory.createTitledBorder(
               BorderFactory.createEtchedBorder(), "Attitude Determination")
               );
@@ -62,7 +63,7 @@ public class AttDetSysJPanel extends JPanel {
                                    "Star Tracker Body to Sensor Orientation")
                           );
 
-    adsTableModel = new ConeTrackerTableModel(platform);
+    adsTableModel = new ConeTrackerTableModel(tkrSettings);
     JTable adsTable = new JTable((TableModel) adsTableModel);
     //fieldsList.add(omega);
     //omega.setErrorLabel("CB Angular Velocity");

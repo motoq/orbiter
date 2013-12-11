@@ -33,7 +33,6 @@ import com.motekew.vse.c0ntm.*;
 import com.motekew.vse.enums.*;
 import com.motekew.vse.envrm.Gravity;
 import com.motekew.vse.math.*;
-import com.motekew.vse.sensm.*;
 import com.motekew.vse.servm.*;
 import com.motekew.vse.trmtm.*;
 import com.motekew.vse.ui.*;
@@ -232,7 +231,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
     tabbedPane.addTab("Orbiter", orbitPanel);
     attitudePanel = new AttContSysJPanel(this, fieldsList);
     tabbedPane.addTab("ACS", attitudePanel);
-    adsPanel = new AttDetSysJPanel(this, os);
+    adsPanel = new AttDetSysJPanel(this, os.starTrackerConfigs());
     tabbedPane.addTab("ADS", adsPanel);
     cbPanel = new CBodyJPanel(fieldsList);
     tabbedPane.addTab("Central Body", cbPanel);
@@ -473,20 +472,19 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
    */
   private void attitudeDetermination() {
     DecimalFormat df = new DecimalFormat("0.0000");
-    SimpleConeTracker[] trackers = adsPanel.adsTableModel.getConeTrackers();
+    EulerAngles estRPY = new EulerAngles();
+    int nitr;
 
     Quaternion attitude = new Quaternion();
-    double sysTime = oSys.getT();
-    oSys.getAttitude(sysTime, attitude);
-
-    if (trackers != null) {
-        // Call upon each tracker to make measurements
-      for (int ii=0; ii<trackers.length; ii++) {
-        trackers[ii].measure(sysTime);
-      }
-
+    AttitudeDetTRIAD triadAtt = new AttitudeDetTRIAD();
+    AttitudeDetQuat  wlsAtt = new AttitudeDetQuat();
+    AttitudeDetDQuat dqAtt = new AttitudeDetDQuat();
+    double sysTime = oSys.estimateAttitudeBatch(attitude,
+                                 triadAtt, wlsAtt, dqAtt);
+    
         // Set output time
       adsPanel.attTime.refreshTime(sysTime);
+    {
         // For outputs
       EulerAngles truthRPY = new EulerAngles();
       truthRPY.fromQuatFrameRot(attitude);
@@ -497,11 +495,9 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
       adsPanel.adsOutTableModel.setValueAt(
                           df.format(truthRPY.getDeg(EulerA.BANK)), 0, 3);
 
-        // First TRIAD - estimate and output
-      EulerAngles estRPY = new EulerAngles();
-      AttitudeDetTRIAD triadAtt = new AttitudeDetTRIAD();
-      int nitr = triadAtt.solve(trackers);
+        // Output TRIAD results
       estRPY.fromQuatFrameRot(triadAtt);
+      nitr = triadAtt.iterations();
       EulerAngles deltaRPY = new EulerAngles();
       deltaRPY.minus(truthRPY, estRPY);
       adsPanel.adsOutTableModel.setValueAt(
@@ -510,15 +506,11 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
                           df.format(deltaRPY.getDeg(EulerA.ELEV)), 1, 2);
       adsPanel.adsOutTableModel.setValueAt(
                           df.format(deltaRPY.getDeg(EulerA.BANK)), 1, 3);
-      if (nitr >= 0) {
-        adsPanel.adsOutTableModel.setValueAt("-", 1, 4);
-      } else {
+      if (nitr < 1) {
         adsPanel.adsOutTableModel.setValueAt("X", 1, 4);
       }
 
-        // WLS directly solving for quaternion - estimate and output
-      AttitudeDetQuat  wlsAtt = new AttitudeDetQuat();
-      nitr = wlsAtt.solve(trackers);
+        // Direct WLS
       estRPY.fromQuatFrameRot(wlsAtt);
       deltaRPY.minus(truthRPY, estRPY);
       double droll = deltaRPY.getDeg(EulerA.BANK);
@@ -527,6 +519,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
       adsPanel.adsOutTableModel.setValueAt(df.format(dyaw), 2, 1);
       adsPanel.adsOutTableModel.setValueAt(df.format(dpitch), 2, 2);
       adsPanel.adsOutTableModel.setValueAt(df.format(droll), 2, 3);
+      nitr = wlsAtt.iterations();
       if (nitr >= 0) {
         adsPanel.adsOutTableModel.setValueAt(new Integer(nitr), 2, 4);
         Matrix qCov = wlsAtt.covariance();
@@ -565,12 +558,10 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
         adsPanel.adsOutTableModel.setValueAt("X", 3, 1);
         adsPanel.adsOutTableModel.setValueAt("X", 3, 2);
         adsPanel.adsOutTableModel.setValueAt("X", 3, 3);
-        adsPanel.adsOutTableModel.setValueAt("X", 3, 4);
       }
 
-        // WLS solving for quaternion error - estimate and output
-      AttitudeDetDQuat dqAtt = new AttitudeDetDQuat(); 
-      nitr = dqAtt.solve(trackers);
+        // WLS solving for quaternion error
+      nitr = dqAtt.iterations();
       estRPY.fromQuatFrameRot(dqAtt);
       deltaRPY.minus(truthRPY, estRPY);
       adsPanel.adsOutTableModel.setValueAt(
