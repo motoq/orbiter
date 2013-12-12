@@ -170,22 +170,6 @@ public class OrbiterSys extends Simple6DOFSys implements IPointingPlatform,
   }
 
   /**
-   * Sets an array of SimpleConeTracker objects as star
-   * trackers.  At least 2 must be defined, otherwise
-   * the array will remain null;
-   *
-   * @param   sct   An array of star trackers to point
-   *                to - they are not copied.
-   */
-  public void setStarTrackers(SimpleConeTracker[] sct) {
-    if (sct.length > 1) {
-      starTrackers = sct;
-    } else {
-      starTrackers = null;
-    }
-  }
-
-  /**
    * Configures an array of SimpleConeTracker objects as star trackers.
    * If the star trackers have not yet been initialized, at least two
    * tracker config objects must be passed in, otherwise the internal
@@ -198,11 +182,21 @@ public class OrbiterSys extends Simple6DOFSys implements IPointingPlatform,
    *                  then only the first tcfgs.length will be set.
    */
   public void setStarTrackers(SimpleConeTrackerCfg[] tcfgs) {
+      // First check to see if new trackers need to be created
     if (starTrackers == null  ||  starTrackers.length < tcfgs.length) {
       if (tcfgs.length > 1) {
         starTrackers = new SimpleConeTracker[tcfgs.length];
+        for (int ii=0; ii<tcfgs.length; ii++) {
+          starTrackers[ii] = new SimpleConeTracker(this);
+        }
       } else {
         starTrackers = null;
+      }
+    }
+      // Now, update star tracker settings, if valid
+    if (starTrackers != null) {
+      for (int ii=0; ii<tcfgs.length; ii++) {
+        starTrackers[ii].set(tcfgs[ii]);
       }
     }
   }

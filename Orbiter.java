@@ -26,7 +26,7 @@ import javax.media.j3d.*;
 import javax.vecmath.Color3f;
 
 import com.motekew.vse.c0ntm.AttitudeControlDCM;
-import com.motekew.vse.sensm.SimpleConeTracker;
+import com.motekew.vse.sensm.SimpleConeTrackerCfg;
 import com.motekew.vse.cycxm.ModelStepper;
 import com.motekew.vse.enums.Basis3D;
 import com.motekew.vse.enums.XdX6DQ;
@@ -155,7 +155,8 @@ public class Orbiter implements ISimModel {
     vehicleSys.putJ(Basis3D.I, Basis3D.K, 0.169);
 
       // Initialize orbiter star trackers
-    SimpleConeTracker[] trackers = new SimpleConeTracker[N_STAR_TRACKERS];
+    SimpleConeTrackerCfg[] trackers =
+                             new SimpleConeTrackerCfg[N_STAR_TRACKERS];
       // Body to tracker:       Roll    Pitch   Yaw
     double[][] tkr_atts = { {  135.0,  -45.0,   0.0 },
                             { -135.0,  -45.0,   0.0 },
@@ -166,14 +167,12 @@ public class Orbiter implements ISimModel {
     double dvalcone  = Math.toRadians(10.0);       // Full Conewidth
     double dvalsigma = Math.toRadians(0.001);      // 1-sigma meas uncertainty
     for (int ii=0; ii<N_STAR_TRACKERS; ii++) {
-      trackers[ii] = new SimpleConeTracker(vehicleSys, maxMeas);
-      trackers[ii].setConeWidth(dvalcone);
-      trackers[ii].setRandomError(dvalsigma);
       ea.put(EulerA.BANK, Math.toRadians(tkr_atts[ii][0]));
       ea.put(EulerA.ELEV, Math.toRadians(tkr_atts[ii][1]));
       ea.put(EulerA.HEAD, Math.toRadians(tkr_atts[ii][2]));
       ea.toQuatFrameRot(q_b2s);
-      trackers[ii].setOrientation(q_b2s);
+      trackers[ii] = new SimpleConeTrackerCfg(maxMeas, dvalcone,
+                                              dvalsigma, q_b2s);
     }
     vehicleSys.setStarTrackers(trackers);
 
