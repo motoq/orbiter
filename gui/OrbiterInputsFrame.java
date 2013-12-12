@@ -35,6 +35,7 @@ import com.motekew.vse.envrm.Gravity;
 import com.motekew.vse.math.*;
 import com.motekew.vse.servm.*;
 import com.motekew.vse.trmtm.*;
+import com.motekew.vse.sensm.SimpleConeTrackerCfg;
 import com.motekew.vse.ui.*;
 
 import com.motekew.orbiter.OrbiterSys;
@@ -469,6 +470,10 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
    * Performs *batch* attitude determination given simulated star tracker
    * measurements and the primary attitude determination method
    * du jour.
+   *
+   * Since this function is manually called, star tracker settings are
+   * pulled from the associated table each time and the orbiter
+   * config is updated.
    */
   private void attitudeDetermination() {
     DecimalFormat df = new DecimalFormat("0.0000");
@@ -479,6 +484,10 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
     AttitudeDetTRIAD triadAtt = new AttitudeDetTRIAD();
     AttitudeDetQuat  wlsAtt = new AttitudeDetQuat();
     AttitudeDetDQuat dqAtt = new AttitudeDetDQuat();
+      // Pull the current star tracker settings
+    SimpleConeTrackerCfg[] tcfgs =
+              adsPanel.adsTableModel.getConeTrackerSettings();
+    oSys.setStarTrackers(tcfgs);
     double sysTime = oSys.estimateAttitudeBatch(attitude,
                                  triadAtt, wlsAtt, dqAtt);
     

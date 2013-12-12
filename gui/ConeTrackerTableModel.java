@@ -88,12 +88,12 @@ public class ConeTrackerTableModel extends AbstractTableModel {
     EulerAngles ea = new EulerAngles();
     Quaternion orientation = new Quaternion();
     for (int ii=0; ii<NTRACKERS; ii++) {
-      Object objrx = getValueAt(ii, 1);
-      Object objry = getValueAt(ii, 2);
-      Object objrz = getValueAt(ii, 3);
-      Object objcone = getValueAt(ii, 4);
-      Object objsigma = getValueAt(ii, 5);
-      Object objnm = getValueAt(ii, 6);
+      Object objrx = getValueAt(ii, 0);
+      Object objry = getValueAt(ii, 1);
+      Object objrz = getValueAt(ii, 2);
+      Object objcone = getValueAt(ii, 3);
+      Object objsigma = getValueAt(ii, 4);
+      Object objnm = getValueAt(ii, 5);
       try {
         // Parse degree inputs and convert to radians
       ea.put(EulerA.BANK, Math.toRadians(Double.parseDouble(objrx.toString())));
