@@ -60,10 +60,10 @@ public class AttDetSysJPanel extends JPanel {
     adsrpBodyJP.setLayout(new BoxLayout(adsrpBodyJP, BoxLayout.Y_AXIS));
     adsrpBodyJP.setBorder(BorderFactory.createTitledBorder(
          BorderFactory.createEtchedBorder(),
-                                   "Star Tracker Body to Sensor Orientation")
+                                   "Star Tracker Body to Sensor Orientation (Paus to Modify)")
                           );
 
-    adsTableModel = new ConeTrackerTableModel(tkrSettings);
+    adsTableModel = new ConeTrackerTableModel(parent, tkrSettings);
     JTable adsTable = new JTable((TableModel) adsTableModel);
     //fieldsList.add(omega);
     //omega.setErrorLabel("CB Angular Velocity");

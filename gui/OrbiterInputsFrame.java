@@ -27,6 +27,7 @@ import java.text.DecimalFormat;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.nio.charset.CharacterCodingException;
 
 
 import com.motekew.vse.c0ntm.*;
@@ -256,6 +257,19 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
   }
 
   /**
+   * @return   Indicates if the simulation is currently paused.  When true,
+   *           it is generally safe for input windows to accept user inputs
+   *           (vs. making changes while computations are being performed).
+   */
+  public boolean paused() {
+    if (pauseBtn.isEnabled()) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  /**
    * Points internal gain matrices to those used by the control system.
    *
    * @param   kvIn    Damping matrix (kinetic part of control law)
@@ -470,30 +484,25 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
    * Performs *batch* attitude determination given simulated star tracker
    * measurements and the primary attitude determination method
    * du jour.
-   *
-   * Since this function is manually called, star tracker settings are
-   * pulled from the associated table each time and the orbiter
-   * config is updated.
    */
   private void attitudeDetermination() {
-    DecimalFormat df = new DecimalFormat("0.0000");
-    EulerAngles estRPY = new EulerAngles();
-    int nitr;
+    try {
+        // Pull the current star tracker settings
+      SimpleConeTrackerCfg[] tcfgs =
+          adsPanel.adsTableModel.getConeTrackerSettings();
+      DecimalFormat df = new DecimalFormat("0.0000");
+      EulerAngles estRPY = new EulerAngles();
+      int nitr;
 
-    Quaternion attitude = new Quaternion();
-    AttitudeDetTRIAD triadAtt = new AttitudeDetTRIAD();
-    AttitudeDetQuat  wlsAtt = new AttitudeDetQuat();
-    AttitudeDetDQuat dqAtt = new AttitudeDetDQuat();
-      // Pull the current star tracker settings
-    SimpleConeTrackerCfg[] tcfgs =
-              adsPanel.adsTableModel.getConeTrackerSettings();
-    oSys.setStarTrackers(tcfgs);
-    double sysTime = oSys.estimateAttitudeBatch(attitude,
+      Quaternion attitude = new Quaternion();
+      AttitudeDetTRIAD triadAtt = new AttitudeDetTRIAD();
+      AttitudeDetQuat  wlsAtt = new AttitudeDetQuat();
+      AttitudeDetDQuat dqAtt = new AttitudeDetDQuat();
+      oSys.setStarTrackers(tcfgs);
+      double sysTime = oSys.estimateAttitudeBatch(attitude,
                                  triadAtt, wlsAtt, dqAtt);
-    
         // Set output time
       adsPanel.attTime.refreshTime(sysTime);
-    {
         // For outputs
       EulerAngles truthRPY = new EulerAngles();
       truthRPY.fromQuatFrameRot(attitude);
@@ -584,6 +593,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
       } else {
         adsPanel.adsOutTableModel.setValueAt("X", 4, 4);
       }
+    } catch (CharacterCodingException cce) {
     }
   }
 

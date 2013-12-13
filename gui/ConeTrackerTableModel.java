@@ -24,6 +24,7 @@ package com.motekew.orbiter.gui;
 import javax.swing.table.*;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import java.nio.charset.CharacterCodingException;
 
 import com.motekew.vse.enums.EulerA;
 import com.motekew.vse.math.Angles;
@@ -43,20 +44,27 @@ public class ConeTrackerTableModel extends AbstractTableModel {
   private final int NTRACKERS;
   private final int NCOL = 6;
 
+  private OrbiterInputsFrame parent;
+
     // Table columns
   private String[] columnNames = {"X-Rot (deg)", "Y-Rot (deg)", "Z-Rot (deg)",
                                   "Cone Width", "1-\u03C3 (deg)", "Max Meas"};
 
     // Default orientation, 10 deg conewidth, 0.001 deg 1-sig random error
   private Object[][] data = null;
+  private boolean modified = true;
 
   /**
+   * @param   po     Parent Object from which to determine if it is
+   *                 safe to accept new inputs.
    * @param   cfgs   Default Cone tracker Settings.  One tracker
    *                 per array entry.
    */
-  public ConeTrackerTableModel(SimpleConeTrackerCfg[] cfgs) {
+  public ConeTrackerTableModel(OrbiterInputsFrame po,
+                                SimpleConeTrackerCfg[] cfgs) {
     NTRACKERS = cfgs.length;
-
+    parent = po;
+    
     EulerAngles ea = new EulerAngles();
     data = new Object[NTRACKERS][NCOL];
     for (int ii=0; ii<NTRACKERS; ii++) {
@@ -73,14 +81,27 @@ public class ConeTrackerTableModel extends AbstractTableModel {
   }
 
   /**
+   * If the table has been modified since the last call to
+   * getConeTrackerSettings(), true will be returned;
+   * 
+   * @return  Indicates if table fields have been modified
+   */
+  public boolean modified() {
+    return modified;
+  }
+
+  /**
    * Creates an array of cone tracker settings with the most recently
    * entered values entered into the table.
    *
    * @return    A new array of cone tracker settings with the values most
    *            recently entered into the table.  If a parsing error has
    *            occurred, a null is returned.
+   *
+   * @throws     CharacterCodingException when the table can't be parsed due
+   *            to invalid inputs.
    */
-  public SimpleConeTrackerCfg[] getConeTrackerSettings() {
+  public SimpleConeTrackerCfg[] getConeTrackerSettings() throws CharacterCodingException {
     SimpleConeTrackerCfg[] trackers = new SimpleConeTrackerCfg[NTRACKERS];
 
       // Parse tracker parameters from table and update
@@ -113,10 +134,14 @@ public class ConeTrackerTableModel extends AbstractTableModel {
                                                           orientation);
       } catch(NumberFormatException nfe) {
         trackers = null;
-        JOptionPane.showMessageDialog(new JFrame(), "Bad Star Tracker Inputs",
+        JOptionPane.showMessageDialog(new JFrame(),
+                                       "Bad Star Tracker Table Inputs",
                                       "Table Input", JOptionPane.ERROR_MESSAGE);
+        
+        throw new CharacterCodingException();
       }
     }
+    modified = false;
     return trackers;
   }
 
@@ -137,17 +162,19 @@ public class ConeTrackerTableModel extends AbstractTableModel {
   }
 
  /**
-  * Only allow edits to data columns
+  * Only allow edits to data columns when parent is in a safe
+  * state.
   */
   public boolean isCellEditable(int row, int col) {
-    if (col < 1) {
-      return false;
-    } else {
+    if (parent.paused()) {
       return true;
+    } else {
+      return false;
     }
   }
 
   public void setValueAt(Object value, int row, int col) {
+    modified = true;
     data[row][col] = value;
     fireTableCellUpdated(row, col);
   }
