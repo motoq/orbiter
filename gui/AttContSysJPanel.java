@@ -24,6 +24,7 @@ package com.motekew.orbiter.gui;
 import java.util.ArrayList;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.table.*;
 
 import com.motekew.vse.math.*;
 import com.motekew.vse.servm.*;
@@ -45,6 +46,10 @@ import com.motekew.vse.ui.*;
 public class AttContSysJPanel extends JPanel {
   JCheckBox ignoreAttTqsCB;
   String ignoreTqAC = "IgnoreACT";
+  JCheckBox enableADS_CB;
+  JCheckBox useADS_CB;
+  String enableADS = "EnableADS";
+  String useADS = "UseADS";
     // Desired, deviation, correcting torque, for heading, elevation, bank
   DecimalMinMaxJTF heading = new DecimalMinMaxJTF(11, -180.0, 180.0);
   ValueViewJP yaw = new ValueViewJP("Yaw:  ", 0.0);
@@ -170,9 +175,38 @@ public class AttContSysJPanel extends JPanel {
     fieldsList.add(axes);
     gainPanel.add(aPanel);
 
+    JPanel adsFiltOutJP = new JPanel();
+      // Use an inner JPanel to keep table from
+      // stretching the entire width of the window
+    JPanel adsFiltOutBodyJP = new JPanel();
+    adsFiltOutBodyJP.setLayout(new BoxLayout(adsFiltOutBodyJP,
+                                             BoxLayout.Y_AXIS));
+    adsFiltOutBodyJP.setBorder(BorderFactory.createTitledBorder(
+           BorderFactory.createEtchedBorder(), "Filtered Attitude Solution")
+                              );
+      // Stack filter enabling and use options
+    JPanel foPanel = new JPanel();
+    foPanel.setLayout(new BoxLayout(foPanel, BoxLayout.Y_AXIS));
+    enableADS_CB = new JCheckBox("Enable ADS");
+    enableADS_CB.setActionCommand(enableADS);
+    enableADS_CB.addActionListener(parent);
+    useADS_CB = new JCheckBox("Use ADS");
+    useADS_CB.setActionCommand(useADS);
+    useADS_CB.addActionListener(parent);
+    foPanel.add(enableADS_CB);
+    foPanel.add(useADS_CB);
+    adsFiltOutJP.add(foPanel);
+      //
+    TableModel fadsTableModel = new OutTableModel();
+    JTable adsTable = new JTable(fadsTableModel);
+    adsFiltOutBodyJP.add(adsTable.getTableHeader());
+    adsFiltOutBodyJP.add(adsTable);
+    adsFiltOutJP.add(adsFiltOutBodyJP);
+
     add(eulerPanel);
     add(ignoreAttTqsJP);
     add(gainPanel);
+    add(adsFiltOutJP);
   }
 
   /**
@@ -190,5 +224,41 @@ public class AttContSysJPanel extends JPanel {
     kv.set(kvM);
     kp.set(kpM);
     axes.set(axesV);
+  }
+
+  /*
+   * TableModel for outputting true vs. measured attitude.
+   *
+   */
+  private class OutTableModel extends AbstractTableModel {
+    private String[] columnNames = {" ", "Heading \u00B0",
+                                         "Elevation \u00B0",
+                                         "Bank \u00B0"};
+    private Object[][] data = {
+      {"Estimate", new Double(0), new Double(0), new Double(0)},
+      {"\u0394", new Double(0), new Double(0), new Double(0)},
+      {"3\u03C3", new Double(0), new Double(0), new Double(0)}
+    };
+
+    public int getColumnCount() {
+      return columnNames.length;
+    }
+
+    public int getRowCount() {
+      return data.length;
+    }
+
+    public String getColumnName(int col) {
+      return columnNames[col];
+    }
+
+    public Object getValueAt(int row, int col) {
+      return data[row][col];
+    }
+
+    public void setValueAt(Object value, int row, int col) {
+      data[row][col] = value;
+      fireTableCellUpdated(row, col);
+    }
   }
 }

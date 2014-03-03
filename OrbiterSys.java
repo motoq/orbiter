@@ -216,9 +216,43 @@ public class OrbiterSys extends Simple6DOFSys implements IPointingPlatform,
   }
 
   /**
+   * Estimates attitude at current system time using a direct WLS
+   * solution (non constrained) of quaternion element.  Truth attitude
+   * is supplied for comparison tests.
+   *
+   * @param     att   Output, "Truth" attitude.
+   * @param   triad   Output attitude solution using the TRIAD method.
+   * @param    qwls   Output, using a direct solution for each quat component
+   * @param   dqwls   Output, solving for quaternion rotation correction
+   *
+   * @return          Time associated with attitude estimates
+   */
+  public double estimateAttitudeBatch(Quaternion         att,
+                                      AttitudeDetTRIAD triad,
+                                      AttitudeDetQuat   qwls,
+                                      AttitudeDetDQuat dqwls) {
+    double sysTime = this.getT();
+    this.getAttitude(sysTime, att);
+
+      // Take measurements to be used by each system.
+    if (starTrackers != null) {
+      for (int ii=0; ii<starTrackers.length; ii++) {
+        starTrackers[ii].measure(sysTime);
+      }
+    }
+
+    triad.solve(starTrackers);
+    qwls.solve(starTrackers);
+    dqwls.solve(starTrackers);
+    
+    return sysTime;
+  }
+
+  /**
    * Estimates attitude at current system time using a deterministic
    * method, direct WLS solution (non constrained) of quaternion
-   * elements, and a method of solving for a correction rotation.
+   * elements, and a method of solving for a correction rotation.  The
+   * true attitude is supplied for comparison purposes.
    *
    * @param     att   Output, "Truth" attitude.
    * @param   triad   Output attitude solution using the TRIAD method.

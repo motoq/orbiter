@@ -60,7 +60,7 @@ public class AttDetSysJPanel extends JPanel {
     adsrpBodyJP.setLayout(new BoxLayout(adsrpBodyJP, BoxLayout.Y_AXIS));
     adsrpBodyJP.setBorder(BorderFactory.createTitledBorder(
          BorderFactory.createEtchedBorder(),
-                                   "Star Tracker Body to Sensor Orientation (Paus to Modify)")
+               "Star Tracker Body to Sensor Orientation (Pause to Modify)")
                           );
 
     adsTableModel = new ConeTrackerTableModel(parent, tkrSettings);
@@ -76,7 +76,7 @@ public class AttDetSysJPanel extends JPanel {
     JPanel adsOutBodyJP = new JPanel();
     adsOutBodyJP.setLayout(new BoxLayout(adsOutBodyJP, BoxLayout.Y_AXIS));
     adsOutBodyJP.setBorder(BorderFactory.createTitledBorder(
-         BorderFactory.createEtchedBorder(), "Attitude Output")
+         BorderFactory.createEtchedBorder(), "Attitude Output (Batch Solution)")
                           );
     adsOutTableModel = new OutTableModel();
     JTable outTable = new JTable(adsOutTableModel);
