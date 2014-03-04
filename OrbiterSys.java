@@ -221,16 +221,12 @@ public class OrbiterSys extends Simple6DOFSys implements IPointingPlatform,
    * is supplied for comparison tests.
    *
    * @param     att   Output, "Truth" attitude.
-   * @param   triad   Output attitude solution using the TRIAD method.
    * @param    qwls   Output, using a direct solution for each quat component
-   * @param   dqwls   Output, solving for quaternion rotation correction
    *
    * @return          Time associated with attitude estimates
    */
   public double estimateAttitudeBatch(Quaternion         att,
-                                      AttitudeDetTRIAD triad,
-                                      AttitudeDetQuat   qwls,
-                                      AttitudeDetDQuat dqwls) {
+                                      AttitudeDetQuat   qwls) {
     double sysTime = this.getT();
     this.getAttitude(sysTime, att);
 
@@ -241,9 +237,7 @@ public class OrbiterSys extends Simple6DOFSys implements IPointingPlatform,
       }
     }
 
-    triad.solve(starTrackers);
     qwls.solve(starTrackers);
-    dqwls.solve(starTrackers);
     
     return sysTime;
   }
