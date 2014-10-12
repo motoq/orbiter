@@ -354,12 +354,19 @@ public class OrbiterStartupFrame extends JFrame implements ActionListener {
     } else if ("useEarthValues".equals(e.getActionCommand())) {
       if (useEarthValuesCB.isSelected()) {
         WGS84EGM96Ref cbRef = new WGS84EGM96Ref();
-
+        double m_p_er = cbRef.metersPerDU();
+        double s_p_tu = cbRef.secondsPerTU();
+          // Coefficients
         clM = cbRef.unnormalizedGravityCosCoeff(NGC-1, NGC-1);
         slM = cbRef.unnormalizedGravitySinCoeff(NGC-1, NGC-1);
-        mu.set(cbRef.gravitationalParameter());        // m^/s^2
-        re.set(cbRef.gravitationalReferenceRadius());  // m
-        omega.set(cbRef.angularVelocity());            // rad/s  
+          // Semimajor and grav param - convert to SI
+        double a_er = cbRef.gravitationalReferenceRadius();
+        double gm_erpmin = cbRef.gravitationalParameter();
+        double gm_mpsec = gm_erpmin*m_p_er*m_p_er*m_p_er/
+                                   (s_p_tu*s_p_tu);
+        mu.set(gm_mpsec);                              // m^3/s^2
+        re.set(a_er*m_p_er);                           // m
+        omega.set(cbRef.angularVelocity()/s_p_tu);     // rad/s  
 
         clmJP.set(clM);
         slmJP.set(slM);        
