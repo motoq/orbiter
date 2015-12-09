@@ -576,22 +576,58 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
         adsPanel.adsOutTableModel.setValueAt("X", 3, 1);
         adsPanel.adsOutTableModel.setValueAt("X", 3, 2);
         adsPanel.adsOutTableModel.setValueAt("X", 3, 3);
+          // Still want to add an entry
+        if (adsPanel.recAttCB.isSelected()) {
+          AttDetData ad = new AttDetData();
+          attDetDataList.add(ad);
+        }
       }
 
         // WLS solving for quaternion error
-      nitr = dqAtt.iterations();
       estRPY.fromQuatFrameRot(dqAtt);
       deltaRPY.minus(truthRPY, estRPY);
-      adsPanel.adsOutTableModel.setValueAt(
-                          df.format(deltaRPY.getDeg(EulerA.HEAD)), 4, 1);
-      adsPanel.adsOutTableModel.setValueAt(
-                          df.format(deltaRPY.getDeg(EulerA.ELEV)), 4, 2);
-      adsPanel.adsOutTableModel.setValueAt(
-                          df.format(deltaRPY.getDeg(EulerA.BANK)), 4, 3);
+      droll = deltaRPY.getDeg(EulerA.BANK);
+      dpitch = deltaRPY.getDeg(EulerA.ELEV);
+      dyaw = deltaRPY.getDeg(EulerA.HEAD);
+      adsPanel.adsOutTableModel.setValueAt(df.format(dyaw), 4, 1);
+      adsPanel.adsOutTableModel.setValueAt(df.format(dpitch), 4, 2);
+      adsPanel.adsOutTableModel.setValueAt(df.format(droll), 4, 3);
+      nitr = dqAtt.iterations();
       if (nitr >= 0) {
         adsPanel.adsOutTableModel.setValueAt(new Integer(nitr), 4, 4);
+        Matrix qCov = dqAtt.covariance();
+        Matrix eCov = new Matrix(estRPY.length());
+        DEulerDQuat dedq = new DEulerDQuat();
+        dedq.partials(dqAtt);
+        eCov.transform(dedq, qCov);
+          // Three Sigma
+        double sigR = 3.0*Math.toDegrees(Math.sqrt(eCov.get(1, 1)));
+        double sigP = 3.0*Math.toDegrees(Math.sqrt(eCov.get(2, 2)));
+        double sigY = 3.0*Math.toDegrees(Math.sqrt(eCov.get(3, 3)));
+        adsPanel.adsOutTableModel.setValueAt(df.format(sigY), 5, 1);
+        adsPanel.adsOutTableModel.setValueAt(df.format(sigP), 5, 2);
+        adsPanel.adsOutTableModel.setValueAt(df.format(sigR), 5, 3);
+        boolean rok = (sigR-Math.abs(droll) >= 0.0) ? true : false;
+        boolean pok = (sigP-Math.abs(dpitch) >= 0.0) ? true : false;
+        boolean yok = (sigY-Math.abs(dyaw) >= 0.0) ? true : false;
+        if (rok && pok && yok) {
+          adsPanel.adsOutTableModel.setValueAt("\u2713", 5, 4);
+        } else {
+          adsPanel.adsOutTableModel.setValueAt("X", 5, 4);
+        }
+        if (adsPanel.recAttCB.isSelected()) {
+          int ndx = attDetDataList.size() - 1;
+          if (ndx >= 0) {
+            AttDetData ad = attDetDataList.get(ndx);
+            ad.estAtt2.set(dqAtt);
+            ad.attCov2.set(qCov);
+          }
+        }
       } else {
         adsPanel.adsOutTableModel.setValueAt("X", 4, 4);
+        adsPanel.adsOutTableModel.setValueAt("X", 5, 1);
+        adsPanel.adsOutTableModel.setValueAt("X", 5, 2);
+        adsPanel.adsOutTableModel.setValueAt("X", 5, 3);
       }
     } catch (CharacterCodingException cce) {
     }
@@ -620,21 +656,23 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
         File attDetFile = saveFileChooser.getSelectedFile();
         double deltaSD, deltaID, deltaJD, deltaKD;   // Deterministic (TRIAD)
         double deltaS, deltaI, deltaJ, deltaK;       // Estimated
+        double deltaS2, deltaI2, deltaJ2, deltaK2;   // Secondary estimated
         double sigQ0, sigQI, sigQJ, sigQK;           // Standard Deviation
+        double sigQ02, sigQI2, sigQJ2, sigQK2;       // Secondary standard deviation
         try {
           FileWriter fw = new FileWriter(attDetFile);
           BufferedWriter bw = new BufferedWriter(fw);
           PrintWriter pw = new PrintWriter(bw);
             // Print Header First
           pw.printf("\nTime");
-          pw.printf("\t\t\tdq0D dq0 3sig q0");
-          pw.printf("\t\t\tdqiD dqi 3sig qi");
-          pw.printf("\t\t\tdqjD dqj 3sig qj");
-          pw.printf("\t\t\tdqkD dqk 3sig qk");
-          pw.printf("\t\tdroll 3sig roll (rad)");
-          pw.printf("\t\tdpitch 3sig pitch (rad)");
-          pw.printf("\t\tdyaw 3sig yaw (rad)");
-          pw.printf("\t\tdAngle 3sig Angle (rad)");
+          pw.printf("\t\t\tdq0D dq0 3sig_q0 dq02 3sig_q02");
+          pw.printf("\t\t\tdqiD dqi 3sig_qi dqi2 3sig_qi2");
+          pw.printf("\t\t\tdqjD dqj 3sig_qj dqj2 3sig_qj2");
+          pw.printf("\t\t\tdqkD dqk 3sig_qk dqk2 3sig_qk2");
+          pw.printf("\t\tdroll 3sig_roll_(rad)");
+          pw.printf("\t\tdpitch 3sig_pitch_(rad)");
+          pw.printf("\t\tdyaw 3sig_yaw_(rad)");
+          pw.printf("\t\tdAngle 3sig_Angle_(rad)");
             // Loop over recored attitude data - delta then sigma
           DAngDQuat dadq = new DAngDQuat();
           Matrix angCov = new Matrix(1);
@@ -644,6 +682,7 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
             ad.truthAtt.standardize();
             ad.triadAtt.standardize();
             ad.estAtt.standardize();
+            ad.estAtt2.standardize();
               // Differences from deterministic method
             deltaSD = ad.truthAtt.get(Q.Q0) - ad.triadAtt.get(Q.Q0);
             deltaID = ad.truthAtt.get(Q.QI) - ad.triadAtt.get(Q.QI);
@@ -654,15 +693,27 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
             deltaI = ad.truthAtt.get(Q.QI) - ad.estAtt.get(Q.QI);
             deltaJ = ad.truthAtt.get(Q.QJ) - ad.estAtt.get(Q.QJ);
             deltaK = ad.truthAtt.get(Q.QK) - ad.estAtt.get(Q.QK);
+              // differences from secondary estimated method
+            deltaS2 = ad.truthAtt.get(Q.Q0) - ad.estAtt2.get(Q.Q0);
+            deltaI2 = ad.truthAtt.get(Q.QI) - ad.estAtt2.get(Q.QI);
+            deltaJ2 = ad.truthAtt.get(Q.QJ) - ad.estAtt2.get(Q.QJ);
+            deltaK2 = ad.truthAtt.get(Q.QK) - ad.estAtt2.get(Q.QK);
               // Bump up to 3-sigma for containment checks
             sigQ0 = 3.0*Math.sqrt(ad.attCov.get(1,1));
             sigQI = 3.0*Math.sqrt(ad.attCov.get(2,2));
             sigQJ = 3.0*Math.sqrt(ad.attCov.get(3,3));
             sigQK = 3.0*Math.sqrt(ad.attCov.get(4,4));
+              // Secondary
+            sigQ02 = 3.0*Math.sqrt(ad.attCov2.get(1,1));
+            sigQI2 = 3.0*Math.sqrt(ad.attCov2.get(2,2));
+            sigQJ2 = 3.0*Math.sqrt(ad.attCov2.get(3,3));
+            sigQK2 = 3.0*Math.sqrt(ad.attCov2.get(4,4));
+              // Start writing 
             pw.printf("\n%f\t", ad.time);
-            pw.printf("%e %e %e\t%e %e %e\t%e %e %e\t%e %e %e",
-                      deltaSD, deltaS, sigQ0, deltaID, deltaI, sigQI, 
-                      deltaJD, deltaJ, sigQJ, deltaKD, deltaK, sigQK);
+            pw.printf("%e %e %e %e %e\t", deltaSD,deltaS,sigQ0,deltaS2,sigQ02);
+            pw.printf("%e %e %e %e %e\t", deltaID,deltaI,sigQI,deltaI2,sigQI2); 
+            pw.printf("%e %e %e %e %e\t", deltaJD,deltaJ,sigQJ,deltaJ2,sigQJ2);
+            pw.printf("%e %e %e %e %e\t", deltaKD,deltaK,sigQK,deltaK2,sigQK2);
             pw.printf("\t%e %e\t%e %e\t%e %e", 
                       ad.deltaEuler.get(EulerA.BANK),
                       3.0*Math.sqrt(ad.eulerCov.get(1,1)), 
@@ -696,5 +747,8 @@ public class OrbiterInputsFrame extends JFrame implements IHandleObserver,
     Matrix attCov = new Matrix(4);
     EulerAngles deltaEuler = new EulerAngles();
     Matrix eulerCov = new Matrix(3);
+      // 2nd estimation method
+    Quaternion estAtt2 = new Quaternion();
+    Matrix attCov2 = new Matrix(4);
   }
 }

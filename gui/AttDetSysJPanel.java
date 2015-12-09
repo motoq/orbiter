@@ -121,6 +121,8 @@ public class AttDetSysJPanel extends JPanel {
       {"QWLS 3\u03C3",
         new Double(0), new Double(0), new Double(0), new Integer(0)},
       {"DQWLS \u0394",
+        new Double(0), new Double(0), new Double(0), new Integer(0)},
+      {"DQWLS 3\u03C3",
         new Double(0), new Double(0), new Double(0), new Integer(0)}
     };
 
